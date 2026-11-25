@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Password — Phantom Solutions POS</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #F4F6FB; color: #0F172A; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 16px; }
+    .card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 24px; width: 100%; max-width: 380px; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); }
+    h2 { margin: 0 0 6px; font-size: 20px; color: #0F172A; }
+    p { margin: 0 0 18px; font-size: 14px; color: #475569; }
+    input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 15px; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px; background: #059669; color: #FFFFFF; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: 0.6; }
+    #msg { margin-top: 14px; font-size: 14px; font-weight: 500; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Phantom Solutions POS</h2>
+    <p>Enter a new password for your account.</p>
+    <input id="pw" type="password" placeholder="New password (min 6 characters)" />
+    <input id="pw2" type="password" placeholder="Confirm new password" />
+    <button id="btn" type="button">Update Password</button>
+    <div id="msg"></div>
+  </div>
+  <script>
+    const sb = supabase.createClient(
+      'https://zaeaqlyeinwvkunigbgu.supabase.co',
+      'sb_publishable_IpPYw6s3l5mw1Tr4p4F0YQ_XlxxghN-'
+    );
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    if (hashParams.get('error_description')) {
+      msg.style.color = '#BE123C';
+      msg.textContent = hashParams.get('error_description');
+    }
+
+    btn.addEventListener('click', async () => {
+      const p1 = document.getElementById('pw').value.trim();
+      const p2 = document.getElementById('pw2').value.trim();
+      if (p1.length < 6) {
+        msg.style.color = '#BE123C';
+        msg.textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+      if (p1 !== p2) {
+        msg.style.color = '#BE123C';
+        msg.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      btn.disabled = true;
+      msg.style.color = '#475569';
+      msg.textContent = 'Updating password...';
+
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) {
+        msg.style.color = '#BE123C';
+        msg.textContent = 'Error: ' + error.message;
+        btn.disabled = false;
+      } else {
+        msg.style.color = '#047857';
+        msg.textContent = 'Password updated! Close this browser tab and sign in to Phantom Solutions POS.';
+      }
+    });
+  </script>
+</body>
+</html>
